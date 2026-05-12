@@ -1,0 +1,10 @@
+cityscapesscripts
+numpy
+opencv-python
+pillow
+matplotlib
+scikit-image
+jupyter
+# Note: install GPU-enabled PyTorch separately to match your CUDA/drivers
+# Example (Windows, CUDA 11.8):
+# python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118

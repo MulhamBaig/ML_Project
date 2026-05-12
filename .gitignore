@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+ML_Project/
+.env
+
+# Dataset (do not commit large dataset files)
+gtFine_trainvaltest/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
