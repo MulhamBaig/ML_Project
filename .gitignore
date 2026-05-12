@@ -7,6 +7,9 @@ __pycache__/
 ML_Project/
 .env
 
+# Local helper checkout (keep on disk, do not commit)
+cityscapesScripts/
+
 # Dataset (do not commit large dataset files)
 gtFine_trainvaltest/
 
