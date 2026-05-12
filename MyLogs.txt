@@ -1,0 +1,76 @@
+PROJECT LOG
+
+Project goal
+This project is for a low altitude drone that flies in cities at about truck height.
+The drone needs to understand what is around it so it can avoid objects safely.
+The first phase of the project is to build a semantic segmentation model using the Cityscapes fine annotation dataset.
+
+Dataset plan
+The dataset folder is `gtFine_trainvaltest`.
+The `gtFine_trainvaltest\gtFine\test` folder contains black images (privacy), so it will not be used.
+
+Partitioning (finalized)
+- Training: use the entire `gtFine_trainvaltest\gtFine\train` folder.
+- Validation: use the first half of the `gtFine_trainvaltest\gtFine\val` folder.
+- Testing: use the second half of the `gtFine_trainvaltest\gtFine\val` folder.
+
+Note: These three partitions are disjoint — no image appears in more than one partition.
+
+Git setup
+The project is managed with Git.
+The local project folder was linked to this GitHub repository:
+https://github.com/MulhamBaig/ML_Project.git
+The dataset folder was added to `.gitignore` so it will not be pushed to GitHub.
+The local `cityscapesScripts` checkout was also kept out of Git tracking so the main repo stays clean.
+
+Environment setup
+1. Set the PowerShell execution policy for the current user with `RemoteSigned` so activation scripts can run.
+2. Created a Python virtual environment named `ML_Project` inside the project folder.
+3. Activated the virtual environment.
+4. Upgraded `pip`.
+5. Installed the Python packages needed for the project.
+6. Installed `cityscapesscripts`.
+7. Installed PyTorch with CUDA support for the NVIDIA RTX 3060 GPU.
+8. Set the `CITYSCAPES_DATASET` environment variable to the dataset root folder.
+
+GPU and CUDA check
+The computer has an NVIDIA GeForce RTX 3060 Laptop GPU.
+The NVIDIA driver is installed and working.
+The CUDA toolkit is installed.
+PyTorch was tested and CUDA works correctly.
+The final test showed:
+- CUDA available: True
+- CUDA version: 13.2
+- GPU device count: 1
+- GPU name: NVIDIA GeForce RTX 3060 Laptop GPU
+
+Cityscapes scripts setup
+The local copy of the `cityscapesScripts` repository was installed into the virtual environment with editable mode.
+The first editable install tried to use build isolation and failed because it wanted to download build dependencies.
+That was fixed by reinstalling with `--no-build-isolation`.
+
+Data preparation
+The Cityscapes polygon annotations were converted into train-ID label images by running `csCreateTrainIdLabelImgs`.
+This created the `*_labelTrainIds.png` files needed for segmentation training.
+The conversion finished successfully for the fine annotations.
+
+Dataset images
+Downloaded the `leftImg8bit_trainvaltest.zip` file containing the RGB images.
+Organized the dataset according to the Cityscapes standard structure:
+- Moved the `leftImg8bit` folder into `gtFine_trainvaltest` so both annotation and image types sit at the same level.
+- The final structure is:
+  gtFine_trainvaltest/
+  ├── gtFine/           (fine annotations, now with *_labelTrainIds.png files)
+  ├── leftImg8bit/      (RGB images for all splits)
+  ├── license.txt
+  └── README
+- Added `leftImg8bit_trainvaltest` folder and zip file to `.gitignore` to prevent accidental commits of large dataset files.
+
+Current status
+The environment is ready for machine learning work.
+The dataset is prepared for segmentation training.
+The GPU is ready for CUDA training.
+The project repo is linked and pushed to GitHub.
+
+Next step
+Build the first data loader and segmentation model for training on the Cityscapes train split.
