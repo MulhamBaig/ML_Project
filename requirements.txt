@@ -5,6 +5,20 @@ pillow
 matplotlib
 scikit-image
 jupyter
-# Note: install GPU-enabled PyTorch separately to match your CUDA/drivers
-# Example (Windows, CUDA 11.8):
-# python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+PyQt5
+
+# PyTorch with CUDA Support
+# Install GPU-enabled PyTorch separately to match your CUDA version and GPU drivers
+# For NVIDIA GPU users, choose the appropriate command below:
+#
+# CUDA 12.4 (Latest):
+#   python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+#
+# CUDA 13.2:
+#   python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu132
+#
+# CPU-only (if no GPU):
+#   python -m pip install torch torchvision torchaudio
+#
+# After installing, verify with:
+#   python -c "import torch; print('CUDA available:', torch.cuda.is_available()); print('GPU:', torch.cuda.get_device_name() if torch.cuda.is_available() else 'None')"
