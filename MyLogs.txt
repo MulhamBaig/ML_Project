@@ -82,3 +82,19 @@ The environment is verified and reproducible. All Phase 1 pre-flight checks pass
 
 Next step
 Build the first data loader and segmentation model for training on the Cityscapes train split.
+
+Phase 2 — Baseline FCN-ResNet50 (completed 2026-05-14):
+- Implemented `CityscapesDataset` and `train_baseline.py` under `src/`.
+- Training configuration used for verification:
+  - subset of train images: 400
+  - validation subset: 100
+  - input size: 256x512
+  - batch size: 4
+  - epochs: 5
+- Results (sanity run):
+  - final validation mIoU: 0.2936
+  - average inference latency on val images: 30.07 ms
+  - model checkpoints saved to `runs/phase2_baseline/model_epoch{epoch}.pth` (ignored by Git)
+
+Notes:
+- This run is intended as a pipeline verification and baseline benchmark. Use the full train set and longer schedules for production training.

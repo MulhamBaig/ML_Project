@@ -355,5 +355,24 @@ These checks confirm the dataset and GPU environment are ready for model develop
 
 ---
 
+## Phase 2 Results (Baseline FCN-ResNet50)
+
+- Date: 2026-05-14
+- Implemented: `src/cityscapes_dataset.py`, `src/train_baseline.py`
+- Verification training configuration:
+  - train subset: 400 images
+  - val subset: 100 images
+  - input size: 256x512
+  - batch size: 4
+  - epochs: 5
+- Results (sanity run):
+  - final validation mIoU: 0.2936
+  - average inference latency on val images: 30.07 ms
+- Model checkpoints: `runs/phase2_baseline/model_epoch{epoch}.pth` (ignored by Git)
+
+Summary: The baseline FCN-ResNet50 pipeline completed a short verification run successfully. The model shows modest mIoU as expected for a small subset and short schedule. Use the full training set and longer schedules for production training.
+
+---
+
 **Last Updated**: 2026-05-14  
-**Status**: Phase 1 complete; ready to build data loader and baseline model
+**Status**: Phase 1 complete; Phase 2 baseline verification finished.
