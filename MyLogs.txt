@@ -67,10 +67,18 @@ Organized the dataset according to the Cityscapes standard structure:
 - Added `leftImg8bit_trainvaltest` folder and zip file to `.gitignore` to prevent accidental commits of large dataset files.
 
 Current status
-The environment is ready for machine learning work.
-The dataset is prepared for segmentation training.
-The GPU is ready for CUDA training.
-The project repo is linked and pushed to GitHub.
+Phase 1 — Pre-Flight Check (completed 2026-05-14):
+- Verified dataset root: `gtFine_trainvaltest` contains `gtFine/` and `leftImg8bit/` at the same level.
+- Verified `_labelTrainIds.png` masks:
+  - `gtFine/train` labels: 2975 files
+  - `gtFine/val` labels: 500 files
+- Verified PyTorch + CUDA on GPU:
+  - `cuda_available`: True
+  - `device_count`: 1
+  - `device_name`: NVIDIA GeForce RTX 3060 Laptop GPU
+- Locked current environment: `requirements.txt` updated via `pip freeze` from the active `ML_Project` venv.
+
+The environment is verified and reproducible. All Phase 1 pre-flight checks passed.
 
 Next step
 Build the first data loader and segmentation model for training on the Cityscapes train split.

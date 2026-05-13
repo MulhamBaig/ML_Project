@@ -341,5 +341,19 @@ GitHub: https://github.com/MulhamBaig
 
 ---
 
-**Last Updated**: May 2026  
-**Status**: Dataset organized, ready for model training phase
+## Phase 1 Results (Pre-Flight Check)
+
+- Date: 2026-05-14
+- Dataset root `gtFine_trainvaltest` verified to contain both `gtFine/` and `leftImg8bit/`.
+- `_labelTrainIds.png` mask counts: `train` = 2975, `val` = 500.
+- PyTorch + CUDA verified on the active `ML_Project` venv:
+   - `cuda_available`: True
+   - GPU: NVIDIA GeForce RTX 3060 Laptop GPU
+- Environment locked: `requirements.txt` updated from `pip freeze` in the active venv.
+
+These checks confirm the dataset and GPU environment are ready for model development.
+
+---
+
+**Last Updated**: 2026-05-14  
+**Status**: Phase 1 complete; ready to build data loader and baseline model
