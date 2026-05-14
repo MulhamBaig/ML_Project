@@ -163,6 +163,8 @@ Phase 4 — Evaluation & Visual Comparison (completed 2026-05-14)
 - Verified that both models produce valid segmentation masks and that YOLO's edge performance is clearly visualized.
 - Phase 4 is now fully complete with all qualitative and quantitative visualizations generated.
 
-Phase 5 — Documentation & Git Wrap-Up
-Status: Pending.
-Plan: Final documentation polish, branch merge, and push to main.
+Phase 5 — Documentation & Git Wrap-Up (completed 2026-05-14)
+- Workspace Audit & Cleanup: Removed obsolete scripts (`src/yolo_inference_latency.py`) and temporary weights (`yolo26n.pt`).
+- Visual Comparison Polish: Updated `src/visual_grid.py` to disable bounding boxes (`boxes=False`) in YOLO predictions, ensuring a fair 1-to-1 segmentation visual comparison with the baseline.
+- Final Documentation: Polished `README.md` and `MyLogs.txt` to reflect the final project state.
+- Status: Phase 5 Complete: Workspace cleaned and YOLO visualization updated to remove bounding boxes for 1-to-1 segmentation comparison.

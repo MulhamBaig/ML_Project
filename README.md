@@ -399,4 +399,4 @@ Fix: `src/yolo_latency_fixed.py` calls `model.model(tensor)` (raw backbone, no N
 
 ## Status
 
-Phase 1 complete. Phase 2 baseline verification complete. Phase 3 sanity training complete (latency fix applied and verified). Phase 4 complete (visual comparison and metric charts generated). Phase 5 (Git wrap-up) pending.
+Phase 1 complete. Phase 2 baseline verification complete. Phase 3 sanity training complete (latency fix applied and verified). Phase 4 complete (visual comparison and metric charts generated). Phase 5 complete (workspace cleaned and visualization polished).

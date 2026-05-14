@@ -35,8 +35,8 @@ def predict_baseline(model, img_pil, size=(256, 512), device='cpu'):
 def predict_yolo(weights_path: Path, img_path: Path):
     model = YOLO(str(weights_path))
     res = model.predict(source=str(img_path), imgsz=512, device=0, verbose=False)
-    # use result.plot() to get colorized overlay
-    vis = res[0].plot()
+    # use result.plot() to get colorized overlay (disable boxes for fair comparison)
+    vis = res[0].plot(boxes=False)
     return vis
 
 
