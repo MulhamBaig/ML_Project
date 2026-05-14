@@ -374,15 +374,14 @@ Fix: `src/yolo_latency_fixed.py` calls `model.model(tensor)` (raw backbone, no N
 
 | Model | Latency (ms) | Method | Verdict |
 |---|---|---|---|
-| FCN-ResNet50 | 39.76 ms | GPU-sync'd forward-pass | Baseline |
-| YOLOv8n-seg (old, wall-clock) | 76.71 ms | `model.predict()` end-to-end | ❌ Unfair measurement |
-| **YOLOv8n-seg (fixed, forward-pass)** | **13.27 ms** | GPU-sync'd forward-pass | **✅ 3.0× faster than ResNet50** |
+| FCN-ResNet50 | 39.60 ms | GPU-sync'd forward-pass | Baseline |
+| **YOLOv8n-seg (fixed, forward-pass)** | **13.84 ms** | GPU-sync'd forward-pass | **✅ 2.86× faster than ResNet50** |
 
-**Edge hypothesis validated**: YOLOv8n-seg is 3× faster than FCN-ResNet50 on the same hardware, well under the 30 ms real-time target.
+**Edge hypothesis validated**: YOLOv8n-seg is nearly 3× faster than FCN-ResNet50 on the same hardware, well under the 30 ms real-time target.
 
 ### Comparison Artifacts
 
-- ResNet50 baseline artifacts are the checkpoints in `runs/phase2_baseline_run2/`.
+- ResNet50 baseline artifacts are the checkpoints in `runs/phase2_baseline_run3/`.
 - YOLO comparison artifacts include `results.csv`, curves, and prediction previews in `runs/segment/runs/segment/train_trimmed/`.
 - YOLO prediction images are available as `val_batch0_pred.jpg`, `val_batch1_pred.jpg`, and `val_batch2_pred.jpg` alongside the matching label images.
 - Shared metrics table: `Results_Comparison/training_metrics_log.csv`
@@ -393,4 +392,4 @@ Fix: `src/yolo_latency_fixed.py` calls `model.model(tensor)` (raw backbone, no N
 
 ## Status
 
-Phase 1 complete. Phase 2 baseline verification complete. Phase 3 sanity training complete (latency fix applied). Phase 4 (visual comparison) and Phase 5 (Git wrap-up) pending.
+Phase 1 complete. Phase 2 baseline verification complete. Phase 3 sanity training complete (latency fix applied and verified). Phase 4 (visual comparison) and Phase 5 (Git wrap-up) pending.

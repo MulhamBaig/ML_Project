@@ -34,7 +34,7 @@ YOLO_VAL_ROOT = Path("yolo_cityscapes_trimmed/images/val")
 IMGSZ = 512
 N_WARMUP = 5
 N_MEASURE = 100
-MODEL_NAME_FIXED = "yolov8n-seg-fixed"
+MODEL_NAME_FIXED = "yolov8n-seg"
 # ---------------------------------------------------------------------------
 
 

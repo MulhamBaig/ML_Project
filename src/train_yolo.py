@@ -54,6 +54,7 @@ def main() -> None:
     parser.add_argument("--yolo-root", default="yolo_cityscapes")
     parser.add_argument("--run-name", default="yolov8n-seg")
     parser.add_argument("--skip-train", action="store_true", help="Skip the actual training call for a configuration-only dry run")
+    parser.add_argument("--skip-latency", action="store_true", help="Skip the post-training latency measurement (use yolo_latency_fixed.py for a fair GPU-sync'd measurement instead)")
     args = parser.parse_args()
 
     model = YOLO(args.model)
@@ -82,13 +83,17 @@ def main() -> None:
     if results_csv.exists():
         append_yolo_results(results_csv, model_name=args.run_name, notes="Imported from YOLO results.csv")
 
-    val_images = collect_validation_images(yolo_root, split="val")
-    if val_images:
-        avg_latency_ms = measure_inference_latency(model, val_images, device=args.device, imgsz=args.imgsz, count=100)
-        print(f"Average inference latency on 100 validation images: {avg_latency_ms:.2f} ms")
-        MetricsLogger().log_inference_final(args.run_name, avg_latency_ms)
+    if args.skip_latency:
+        print("Skipping wall-clock latency measurement (--skip-latency set).")
+        print("Run src/yolo_latency_fixed.py for a GPU-sync'd forward-pass latency measurement.")
     else:
-        print("No validation images were found for latency measurement.")
+        val_images = collect_validation_images(yolo_root, split="val")
+        if val_images:
+            avg_latency_ms = measure_inference_latency(model, val_images, device=args.device, imgsz=args.imgsz, count=100)
+            print(f"Average inference latency on 100 validation images: {avg_latency_ms:.2f} ms")
+            MetricsLogger().log_inference_final(args.run_name, avg_latency_ms)
+        else:
+            print("No validation images were found for latency measurement.")
 
 
 if __name__ == "__main__":

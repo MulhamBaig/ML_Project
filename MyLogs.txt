@@ -22,6 +22,7 @@ The local project folder was linked to this GitHub repository:
 https://github.com/MulhamBaig/ML_Project.git
 The dataset folder was added to `.gitignore` so it will not be pushed to GitHub.
 The local `cityscapesScripts` checkout was also kept out of Git tracking so the main repo stays clean.
+Branch convention: phase1, phase2-baseline, phase3-yolov8 — one branch per phase.
 
 Environment setup
 1. Set the PowerShell execution policy for the current user with `RemoteSigned` so activation scripts can run.
@@ -33,12 +34,17 @@ Environment setup
 7. Installed PyTorch with CUDA support for the NVIDIA RTX 3060 GPU.
 8. Set the `CITYSCAPES_DATASET` environment variable to the dataset root folder.
 
+Activation command:
+    .\ML_Project\Scripts\Activate.ps1
+
+To run a script directly without activating:
+    .\ML_Project\Scripts\python.exe src\<script>.py
+
 GPU and CUDA check
 The computer has an NVIDIA GeForce RTX 3060 Laptop GPU.
 The NVIDIA driver is installed and working.
 The CUDA toolkit is installed.
 PyTorch was tested and CUDA works correctly.
-The final test showed:
 - CUDA available: True
 - CUDA version: 13.2
 - GPU device count: 1
@@ -60,143 +66,99 @@ Organized the dataset according to the Cityscapes standard structure:
 - Moved the `leftImg8bit` folder into `gtFine_trainvaltest` so both annotation and image types sit at the same level.
 - The final structure is:
   gtFine_trainvaltest/
-  ├── gtFine/           (fine annotations, now with *_labelTrainIds.png files)
+  ├── gtFine/           (fine annotations, with *_labelTrainIds.png files)
   ├── leftImg8bit/      (RGB images for all splits)
   ├── license.txt
   └── README
-- Added `leftImg8bit_trainvaltest` folder and zip file to `.gitignore` to prevent accidental commits of large dataset files.
+- Added dataset and zip file to `.gitignore` to prevent accidental commits of large files.
 
-Current status
-Phase 1 — Pre-Flight Check (completed 2026-05-14):
+Phase 1 — Pre-Flight Check (completed 2026-05-14)
 - Verified dataset root: `gtFine_trainvaltest` contains `gtFine/` and `leftImg8bit/` at the same level.
-- Verified `_labelTrainIds.png` masks:
-  - `gtFine/train` labels: 2975 files
-  - `gtFine/val` labels: 500 files
-- Verified PyTorch + CUDA on GPU:
-  - `cuda_available`: True
-  - `device_count`: 1
-  - `device_name`: NVIDIA GeForce RTX 3060 Laptop GPU
-- Locked current environment: `requirements.txt` updated via `pip freeze` from the active `ML_Project` venv.
+- Verified `_labelTrainIds.png` mask counts:
+  - `gtFine/train`: 2975 files
+  - `gtFine/val`: 500 files
+- Verified PyTorch + CUDA:
+  - cuda_available: True
+  - device_count: 1
+  - device_name: NVIDIA GeForce RTX 3060 Laptop GPU
+- Locked environment: `requirements.txt` updated via `pip freeze` (134 packages, UTF-8).
 
-The environment is verified and reproducible. All Phase 1 pre-flight checks passed.
+All Phase 1 pre-flight checks passed. Environment is verified and reproducible.
 
-Next step
-Build the first data loader and segmentation model for training on the Cityscapes train split.
+Phase 2 — Baseline FCN-ResNet50 (completed 2026-05-14)
+Source files: `src/cityscapes_dataset.py`, `src/metrics_logger.py`, `src/train_baseline.py`
 
-Phase 2 — Baseline FCN-ResNet50 (completed 2026-05-14):
-- Implemented `CityscapesDataset`, `MetricsLogger`, and `train_baseline.py` under `src/`.
-- Added centralized CSV tracking in `Results_Comparison/training_metrics_log.csv`.
-- Training configuration used for verification:
-  - subset of train images: 400
-  - validation subset: 100
-  - input size: 256x512
-  - batch size: 4
-  - epochs: 5
-  - run: 1
-- Results (Run 1):
-  - final validation mIoU: 0.2933
-  - average inference latency on 100 validation images: 26.29 ms
-  - total training time: 174.29 seconds
-  - checkpoint names: `resnet50_Run1_Epoch1.pth` through `resnet50_Run1_Epoch5.pth`
-- CSV columns used for every epoch:
-  - Model_Name, Epoch, Train_Loss, Val_Loss, Val_mIoU, Epoch_Duration_sec, Total_Time_Elapsed_sec, Inference_Latency_ms, Notes_and_Errors
+Training configuration (matched to YOLO for fair comparison):
+- Model: FCN-ResNet50 (pretrained=False, 19 classes)
+- Train subset: 400 images
+- Val subset: 100 images
+- Input size: 512x512
+- Batch size: 4
+- Epochs: 5
+- Optimizer: SGD (lr=1e-3, momentum=0.9, weight_decay=1e-4)
+- Loss: CrossEntropyLoss (ignore_index=255)
+- Run number: 3
 
-Notes:
-- This run is intended as a pipeline verification and baseline benchmark. Use the full train set and longer schedules for production training.
+Results:
+- Final val mIoU: 0.3329
+- Average inference latency (100 val images, GPU-sync'd forward-pass only): 39.60 ms
+- Total training time: 278.25 seconds
+- Checkpoints: `runs/phase2_baseline_run3/resnet50_Run3_Epoch{1-5}.pth`
 
-Phase 3 — YOLOv8-Seg setup (completed 2026-05-14):
-- Switched to the `phase3-yolov8` branch.
-- Added YOLO helper scripts under `src/`:
-  - `yolo_cityscapes_utils.py`
-  - `prepare_yolo_cityscapes.py`
-  - `append_yolo_metrics.py`
-  - `train_yolo.py`
-- Added `cityscapes.yaml` for Ultralytics.
-- Installed `ultralytics` into the active venv.
-- Ran a dry conversion test on one train sample and one val sample.
-- The converter successfully created directory junctions for:
-  - `yolo_cityscapes/images/train`
-  - `yolo_cityscapes/images/val`
-- The converter wrote YOLO polygon label files into `yolo_cityscapes/labels/...`.
-- The YOLO parser is ready to read `runs/segment/train/results.csv` and append mask/loss rows into `Results_Comparison/training_metrics_log.csv`.
+Latency measurement methodology:
+- Image loaded and preprocessed OUTSIDE the timed window.
+- `torch.cuda.synchronize()` called before and after the model forward pass.
+- Latency = net GPU forward-pass time only (no I/O, no pre/post processing).
 
-Notes:
-- YOLOv8 reports segmentation metrics in its own CSV format, so the parser maps the mask metric rows into the shared comparison log.
-- YOLO sanity run was executed for 5 epochs with batch size 4 and image size 512 on GPU.
-- During execution, multiple dataset formatting issues were fixed:
-  - `cityscapes_trimmed.yaml` syntax and missing/duplicated `names` section
-  - label filename alignment with image names (`*_leftImg8bit.txt`)
-  - stale YOLO cache files were removed before rerun
-- Current YOLO run status:
-  - training completed and `best.pt`/`last.pt` were saved under `runs/segment/runs/segment/train_trimmed/weights`
-  - average inference latency over 100 validation images: 74.03 ms
-  - YOLO epoch rows were cleaned and appended to `Results_Comparison/training_metrics_log.csv`
-  - validation mask mAP50 improved from 0.06410 to 0.10514 across the 5 epochs
-- Phase 3 is now complete for the sanity-run checkpoint; remaining work moves into evaluation and visual comparison.
+Phase 3 — YOLOv8-Seg Edge Model (completed 2026-05-14)
+Source files:
+  - `src/yolo_cityscapes_utils.py` — Cityscapes label helpers and polygon normalization
+  - `src/prepare_yolo_cityscapes.py` — converts JSON polygons to YOLO .txt format
+  - `src/train_yolo.py` — YOLO training entrypoint and CSV logging
+  - `src/append_yolo_metrics.py` — maps Ultralytics results.csv into the shared CSV
+  - `src/trim_yolo_dataset.py` — trims the YOLO dataset to a fixed sample count
+  - `src/yolo_latency_fixed.py` — correct GPU-sync'd latency benchmark (no NMS)
+  - `src/visual_grid.py` — generates 1x4 comparison grid (Raw, GT, ResNet50, YOLO)
+  - `cityscapes_trimmed.yaml` — YOLO dataset config for 400-sample trimmed subset
 
-Today's rerun cleanup and comparison update:
-- Reset `Results_Comparison/training_metrics_log.csv` and removed stale duplicate YOLO rows.
-- Updated `src/append_yolo_metrics.py` so YOLO rows are imported from Ultralytics `results.csv` with epoch durations and total elapsed time taken from the `time` column.
-- Updated `src/train_yolo.py` to clear stale `*.cache` files before training and write the final latency row automatically.
-- Updated `src/train_baseline.py` to measure latency in the same end-to-end style as YOLO.
-- Reran both models under matched conditions:
-  - ResNet50 baseline: 5 epochs, batch size 4, input size 512x512, 400 train samples
-  - YOLOv8n-seg: 5 epochs, batch size 4, input size 512x512, 400 train samples
-- Current comparison outputs on disk:
-  - ResNet50 checkpoints in `runs/phase2_baseline_run2/`
-  - YOLO validation prediction images in `runs/segment/train/` (`val_batch*_pred.jpg`, `val_batch*_labels.jpg`)
-  - Shared metrics table in `Results_Comparison/training_metrics_log.csv`
+Training configuration (matched to ResNet50 for fair comparison):
+- Model: yolov8n-seg.pt (Nano, instance segmentation)
+- Train subset: 400 images (via yolo_cityscapes_trimmed)
+- Val subset: 400 images
+- Input size: 512x512
+- Batch size: 4
+- Epochs: 5
+- Device: GPU (RTX 3060)
 
-Phase 3 — Latency Bug Root Cause & Fix (2026-05-14):
-- CRITICAL BUG IDENTIFIED: The reported YOLO latency of 76.71 ms vs ResNet50's 39.76 ms was a measurement methodology mismatch, NOT a true model speed issue.
-- Root cause breakdown:
-  1. ResNet50 measured: torch.cuda.synchronize() + time() around forward pass ONLY (no I/O, no pre/post processing inside timing window).
-  2. YOLOv8n-seg measured: wall-clock time() around model.predict(source=path) which includes:
-     - Disk I/O (reading the image file inside the timed window)
-     - Non-Maximum Suppression (NMS) post-processing
-     - Ultralytics Results object construction and Python dispatch overhead
-     - No GPU warm-up (cold-start GPU JIT penalty on first N images)
-- Fix implemented: Created `src/yolo_latency_fixed.py` which:
-  - Loads and preprocesses images OUTSIDE the timed window
-  - Calls model.model(tensor) (raw PyTorch backbone, no NMS)
-  - Uses torch.cuda.synchronize() before and after each forward pass
-  - Runs 5 GPU warm-up passes before measurement begins
-  - Appends a yolov8n-seg-fixed FINAL row to the shared CSV
-- Additional fixes:
-  - Added `src/trim_yolo_dataset.py` for dataset trimming utility
-  - Fixed `src/visual_grid.py` to use run2 baseline weights (resnet50_Run2_Epoch5.pth) and train_trimmed YOLO weights
-  - Updated `cityscapes_trimmed.yaml` for trimmed dataset training
+YOLO dataset structure:
+- `yolo_cityscapes_trimmed/images/train` and `val` are Windows directory junctions
+  pointing to the original Cityscapes images (no duplication of 50 GB image set).
+- `yolo_cityscapes_trimmed/labels/train` and `val` contain generated YOLO polygon .txt files.
 
-Phase 3 git status (2026-05-14):
-- Branch: phase3-yolov8
-- All Phase 3 scripts committed and pushed after latency fix.
-- Files staged and committed: .gitignore, MyLogs.txt, README.md, Results_Comparison/training_metrics_log.csv,
-  src/append_yolo_metrics.py, src/prepare_yolo_cityscapes.py, src/train_baseline.py, src/train_yolo.py,
-  src/yolo_latency_fixed.py, src/visual_grid.py (path fix), cityscapes_trimmed.yaml, src/trim_yolo_dataset.py
+Results:
+- Val Mask mAP50 (Epoch 1 → Epoch 5): 0.0641 → 0.1051
+- Weights: `runs/segment/runs/segment/train_trimmed/weights/best.pt`
 
-Next step
-Run `src/yolo_latency_fixed.py` to obtain the corrected YOLO forward-pass latency, then proceed to Phase 4 (visual_grid.py) and Phase 5 (Git wrap-up).
+Latency measurement methodology:
+- Images loaded and preprocessed OUTSIDE the timed window.
+- `model.model(tensor)` called (raw PyTorch backbone, NO NMS, NO Ultralytics wrapper).
+- `torch.cuda.synchronize()` called before and after the forward pass.
+- 5 GPU warm-up passes run before measurement begins.
+- This matches the ResNet50 measurement methodology exactly for a fair comparison.
 
-Latency fix result (2026-05-14):
-- Ran `src/yolo_latency_fixed.py` with ML_Project venv active.
-- GPU: NVIDIA GeForce RTX 3060 Laptop GPU (CUDA confirmed).
-- Weights loaded from: `runs/segment/runs/segment/train_trimmed/weights/best.pt`
-- Measured over 100 validation images with 5 GPU warm-up passes.
-- YOLOv8n-seg fixed forward-pass latency: 13.27 ms (std dev 1.77 ms).
-- Comparison:
-  - FCN-ResNet50 (GPU-sync'd forward-pass):  39.76 ms
-  - YOLOv8n-seg (old wall-clock, incl. NMS): 76.71 ms  [unfair]
-  - YOLOv8n-seg (fixed, forward-pass only):  13.27 ms  [fair, apples-to-apples]
-- EDGE HYPOTHESIS VALIDATED: YOLO is 3.0x faster than ResNet50 on the RTX 3060.
-- CSV updated: `Results_Comparison/training_metrics_log.csv` now contains all three FINAL rows.
+Latency results (100 validation images, GPU-sync'd forward-pass only):
+- YOLOv8n-seg: 13.84 ms
+- FCN-ResNet50: 39.60 ms
+- Comparison: YOLO is 2.86x faster than ResNet50.
 
-Requirements freeze (2026-05-14):
-- Ran `pip freeze` inside ML_Project venv and wrote UTF-8 output to `requirements.txt`.
-- Total packages frozen: 134.
-- Note: `requirements.txt` now contains pinned versions of all installed packages including
-  torch==2.12.0+cu132, torchvision==0.27.0+cu132, ultralytics==8.4.50, and all transitive deps.
-- Helper script `freeze_reqs.py` used to avoid PowerShell UTF-16 redirect issue (not tracked in git).
+Phase 3 is now fully complete and verified. Environment is locked and clean.
 
-Next step
-Phase 4: Run `src/visual_grid.py` to generate the 1x4 visual comparison grid.
-Phase 5: Final git commit and push with updated docs.
+Phase 4 — Evaluation & Visual Comparison
+Status: In Progress.
+Plan: Run `src/visual_grid.py` to generate 1x4 Matplotlib grid saved to
+`Results_Comparison/visual_comparison.png`.
+
+Phase 5 — Documentation & Git Wrap-Up
+Status: Pending.
+Plan: Final pip freeze cleanup, git add, commit, push to `phase3-yolov8` branch,
+then merge to `main`.
