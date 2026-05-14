@@ -165,6 +165,7 @@ Phase 4 — Evaluation & Visual Comparison (completed 2026-05-14)
 
 Phase 5 — Documentation & Git Wrap-Up (completed 2026-05-14)
 - Workspace Audit & Cleanup: Removed obsolete scripts (`src/yolo_inference_latency.py`) and temporary weights (`yolo26n.pt`).
-- Visual Comparison Polish: Updated `src/visual_grid.py` to disable bounding boxes (`boxes=False`) in YOLO predictions, ensuring a fair 1-to-1 segmentation visual comparison with the baseline.
+- Benchmark Unified: Created `src/benchmark_all.py` to provide a single, fair comparison tool for future runs. This script measures both ResNet50 and YOLO using the same GPU-sync methodology.
+- Visual Comparison Polish: Updated `src/visual_grid.py` to disable bounding boxes (`boxes=False`) in YOLO predictions and reran the script to ensure a high-quality visual sample for the final grid.
 - Final Documentation: Polished `README.md` and `MyLogs.txt` to reflect the final project state.
-- Status: Phase 5 Complete: Workspace cleaned and YOLO visualization updated to remove bounding boxes for 1-to-1 segmentation comparison.
+- Status: Phase 5 Complete: Workspace cleaned, unified benchmark tool added, and YOLO visualization updated to remove bounding boxes for 1-to-1 segmentation comparison.
