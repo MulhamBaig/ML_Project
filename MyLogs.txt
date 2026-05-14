@@ -84,17 +84,22 @@ Next step
 Build the first data loader and segmentation model for training on the Cityscapes train split.
 
 Phase 2 — Baseline FCN-ResNet50 (completed 2026-05-14):
-- Implemented `CityscapesDataset` and `train_baseline.py` under `src/`.
+- Implemented `CityscapesDataset`, `MetricsLogger`, and `train_baseline.py` under `src/`.
+- Added centralized CSV tracking in `Results_Comparison/training_metrics_log.csv`.
 - Training configuration used for verification:
   - subset of train images: 400
   - validation subset: 100
   - input size: 256x512
   - batch size: 4
   - epochs: 5
-- Results (sanity run):
-  - final validation mIoU: 0.2936
-  - average inference latency on val images: 30.07 ms
-  - model checkpoints saved to `runs/phase2_baseline/model_epoch{epoch}.pth` (ignored by Git)
+  - run: 1
+- Results (Run 1):
+  - final validation mIoU: 0.2933
+  - average inference latency on 100 validation images: 26.29 ms
+  - total training time: 174.29 seconds
+  - checkpoint names: `resnet50_Run1_Epoch1.pth` through `resnet50_Run1_Epoch5.pth`
+- CSV columns used for every epoch:
+  - Model_Name, Epoch, Train_Loss, Val_Loss, Val_mIoU, Epoch_Duration_sec, Total_Time_Elapsed_sec, Inference_Latency_ms, Notes_and_Errors
 
 Notes:
 - This run is intended as a pipeline verification and baseline benchmark. Use the full train set and longer schedules for production training.
