@@ -74,10 +74,10 @@ def main():
     gt_col = colorize_label(gt_arr)
 
     # baseline prediction
-    baseline_weights = Path('runs/phase2_baseline_run2/resnet50_Run2_Epoch5.pth')
+    baseline_weights = Path('runs/phase2_baseline_run3/resnet50_Run3_Epoch5.pth')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     baseline_model = load_baseline_model(baseline_weights, device)
-    baseline_mask = predict_baseline(baseline_model, img, size=(256,512), device=device)
+    baseline_mask = predict_baseline(baseline_model, img, size=(512,512), device=device)
     baseline_col = colorize_label(baseline_mask)
 
     # YOLO prediction (visual overlay)

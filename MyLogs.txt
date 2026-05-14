@@ -153,12 +153,11 @@ Latency results (100 validation images, GPU-sync'd forward-pass only):
 
 Phase 3 is now fully complete and verified. Environment is locked and clean.
 
-Phase 4 — Evaluation & Visual Comparison
-Status: In Progress.
-Plan: Run `src/visual_grid.py` to generate 1x4 Matplotlib grid saved to
-`Results_Comparison/visual_comparison.png`.
+Phase 4 — Evaluation & Visual Comparison (completed 2026-05-14)
+- Generated a 1x4 Matplotlib comparison grid: Raw Image, Ground Truth, FCN-ResNet50 prediction, and YOLOv8n-seg prediction.
+- Output saved to: `Results_Comparison/visual_comparison.png`
+- Verified that both models produce valid segmentation masks on unseen validation samples.
 
 Phase 5 — Documentation & Git Wrap-Up
 Status: Pending.
-Plan: Final pip freeze cleanup, git add, commit, push to `phase3-yolov8` branch,
-then merge to `main`.
+Plan: Final documentation polish, branch merge, and push to main.
