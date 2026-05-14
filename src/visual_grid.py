@@ -48,58 +48,66 @@ def colorize_label(mask):
 
 
 def main():
-    # pick a random validation image
+    # Setup directories
     yolo_root = Path('yolo_cityscapes')
+    out_dir = Path('Results_Comparison')
+    out_dir.mkdir(exist_ok=True)
+    
     val_images = sorted((yolo_root / 'images' / 'val').rglob('*.png'))
     if not val_images:
         print('No val images found')
         return
-    img_path = random.choice(val_images)
 
-    # raw image
-    img = Image.open(img_path).convert('RGB')
-
-    # ground truth mask path from original dataset
-    # infer filename base
-    base = img_path.name.replace('_leftImg8bit.png', '')
-    # city is parent dir name
-    city = img_path.parent.name
-    gt_path = Path('gtFine_trainvaltest') / 'gtFine' / 'val' / city / f"{base}_gtFine_labelTrainIds.png"
-    if not gt_path.exists():
-        # sometimes val images are in different folders; attempt alternative
-        gt_path = Path('gtFine_trainvaltest') / 'gtFine' / 'val' / city / f"{base}_gtFine_labelTrainIds.png"
-
-    gt = Image.open(gt_path).resize(img.size, resample=Image.NEAREST)
-    gt_arr = np.array(gt)
-    gt_col = colorize_label(gt_arr)
-
-    # baseline prediction
-    baseline_weights = Path('runs/phase2_baseline_run3/resnet50_Run3_Epoch5.pth')
+    # Load models once outside the loop
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    baseline_weights = Path('runs/phase2_baseline_run5/resnet50_Run5_Epoch5.pth')
+    yolo_weights = Path('runs/segment/runs/segment/train_final/weights/best.pt')
+    
+    print("Loading models...")
     baseline_model = load_baseline_model(baseline_weights, device)
-    baseline_mask = predict_baseline(baseline_model, img, size=(512,512), device=device)
-    baseline_col = colorize_label(baseline_mask)
+    
+    # Generate 5 comparisons
+    for i in range(1, 6):
+        print(f"Generating visual comparison {i}/5...")
+        img_path = random.choice(val_images)
+        
+        # raw image
+        img = Image.open(img_path).convert('RGB')
+        
+        # ground truth
+        base = img_path.name.replace('_leftImg8bit.png', '')
+        city = img_path.parent.name
+        gt_path = Path('gtFine_trainvaltest') / 'gtFine' / 'val' / city / f"{base}_gtFine_labelTrainIds.png"
+        
+        if not gt_path.exists():
+             continue # Skip if GT is missing for this random pick
+             
+        gt = Image.open(gt_path).resize(img.size, resample=Image.NEAREST)
+        gt_arr = np.array(gt)
+        gt_col = colorize_label(gt_arr)
 
-    # YOLO prediction (visual overlay)
-    yolo_weights = Path('runs/segment/runs/segment/train_trimmed/weights/best.pt')
-    if yolo_weights.exists():
-        yolo_vis = predict_yolo(yolo_weights, img_path)
-    else:
-        yolo_vis = np.array(img)
+        # baseline prediction
+        baseline_mask = predict_baseline(baseline_model, img, size=(512,512), device=device)
+        baseline_col = colorize_label(baseline_mask)
 
-    # plot grid: raw, gt, baseline, yolo
-    fig, axes = plt.subplots(1,4, figsize=(20,6))
-    axes[0].imshow(img); axes[0].set_title('Raw Image'); axes[0].axis('off')
-    axes[1].imshow(gt_col); axes[1].set_title('Ground Truth'); axes[1].axis('off')
-    axes[2].imshow(baseline_col); axes[2].set_title('Baseline (FCN-ResNet50)'); axes[2].axis('off')
-    axes[3].imshow(yolo_vis); axes[3].set_title('YOLOv8-Seg'); axes[3].axis('off')
+        # YOLO prediction
+        if yolo_weights.exists():
+            yolo_vis = predict_yolo(yolo_weights, img_path)
+        else:
+            yolo_vis = np.array(img)
 
-    out_dir = Path('Results_Comparison')
-    out_dir.mkdir(exist_ok=True)
-    out_path = out_dir / 'visual_comparison.png'
-    plt.tight_layout()
-    plt.savefig(out_path, dpi=150)
-    print('Saved visual grid to', out_path)
+        # plot 2x2 grid
+        fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+        axes[0, 0].imshow(img); axes[0, 0].set_title('Raw Image'); axes[0, 0].axis('off')
+        axes[0, 1].imshow(gt_col); axes[0, 1].set_title('Ground Truth'); axes[0, 1].axis('off')
+        axes[1, 0].imshow(baseline_col); axes[1, 0].set_title('FCN-ResNet50'); axes[1, 0].axis('off')
+        axes[1, 1].imshow(yolo_vis); axes[1, 1].set_title('YOLOv8n-seg'); axes[1, 1].axis('off')
+
+        plt.tight_layout()
+        out_path = out_dir / f'visual_comparison_{i}.png'
+        plt.savefig(out_path, dpi=150)
+        plt.close()
+        print(f"Saved: {out_path}")
 
 
 if __name__ == '__main__':

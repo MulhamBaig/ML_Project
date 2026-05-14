@@ -1,4 +1,4 @@
-path: yolo_cityscapes
+path: C:/Users/Mulham Baig/Desktop/VS_Code_Projects/ML_Project/yolo_cityscapes
 train: images/train
 val: images/val
 test: images/test

@@ -16,11 +16,16 @@ def main():
 
     # Load data
     df = pd.read_csv(csv_path)
-    
+    # Filter globally to only show the latest models
+    allowed_models = ['resnet50', 'yolov8n-seg-final']
+    df = df[df['Model_Name'].isin(allowed_models)].copy()
     # Ensure numeric columns are numeric
     numeric_cols = ['Val_mIoU', 'Inference_Latency_ms', 'Total_Time_Elapsed_sec']
     for col in numeric_cols:
         df[col] = pd.to_numeric(df[col], errors='coerce')
+        
+    # Rename for cleaner display on the charts
+    df['Model_Name'] = df['Model_Name'].replace({'resnet50': 'FCN-ResNet50', 'yolov8n-seg-final': 'YOLOv8n-seg'})
 
     # 1. Accuracy Progression (Epoch 1-5)
     plt.figure(figsize=(10, 6))
@@ -51,7 +56,7 @@ def main():
     # yolov8n-seg, FINAL, ..., 13.84
     
     # Filter for specific models if needed, but let's just plot what's there
-    final_df = final_df[final_df['Model_Name'].isin(['resnet50', 'yolov8n-seg'])]
+    final_df = final_df[final_df['Model_Name'].isin(['FCN-ResNet50', 'YOLOv8n-seg'])]
     
     bars = sns.barplot(data=final_df, x='Model_Name', y='Inference_Latency_ms', hue='Model_Name', palette='viridis', legend=False)
     plt.title('Inference Latency Comparison (GPU)')

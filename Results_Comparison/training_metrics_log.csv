@@ -11,3 +11,18 @@ yolov8n-seg,3,9.995400,10.096970,0.089240,16.96,54.00,,"YOLO metric is Mask mAP5
 yolov8n-seg,4,9.681050,9.876240,0.099410,20.13,74.12,,"YOLO metric is Mask mAP50, Baseline is mIoU. Imported from YOLO results.csv"
 yolov8n-seg,5,9.444000,9.850620,0.105140,19.25,93.37,,"YOLO metric is Mask mAP50, Baseline is mIoU. Imported from YOLO results.csv"
 yolov8n-seg,FINAL,,,,,,13.84,"Forward-pass only (GPU-sync'd, no NMS, 5 warmup passes, 100 images)"
+=================================================================,FULL DATASET RUN START (2026-05-14),,,,,,,
+=================================================================,FINAL DATASET RUN (COPIED LABELS & VAL LOSS),,,,,,,
+resnet50,1,0.497228,0.425976,0.394647,315.46,315.46,,
+resnet50,2,0.337006,0.37656,0.451938,317.5,661.02,,
+resnet50,3,0.292793,0.343914,0.47988,322.84,1014.66,,
+resnet50,4,0.265055,0.326928,0.501492,326.89,1385.29,,
+resnet50,5,0.244586,0.314597,0.50793,329.66,1754.3,,
+resnet50,FINAL,,,,,,40.01,Final inference latency measurement
+yolov8n-seg-final,1,10.191920,9.214030,0.136100,101.84,101.84,,"YOLO metric is Mask mAP50, Baseline is mIoU. Imported from YOLO results.csv"
+yolov8n-seg-final,2,8.437290,8.756650,0.152490,90.78,192.62,,"YOLO metric is Mask mAP50, Baseline is mIoU. Imported from YOLO results.csv"
+yolov8n-seg-final,3,8.007410,8.454850,0.176500,90.61,283.23,,"YOLO metric is Mask mAP50, Baseline is mIoU. Imported from YOLO results.csv"
+yolov8n-seg-final,4,7.782210,8.295610,0.185340,117.37,400.60,,"YOLO metric is Mask mAP50, Baseline is mIoU. Imported from YOLO results.csv"
+yolov8n-seg-final,5,7.661720,8.167400,0.193410,93.37,493.97,,"YOLO metric is Mask mAP50, Baseline is mIoU. Imported from YOLO results.csv"
+resnet50,FINAL,,,,,,34.27,Final inference latency measurement
+yolov8n-seg-final,FINAL,,,,,,10.87,Final inference latency measurement

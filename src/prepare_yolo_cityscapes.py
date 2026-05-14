@@ -10,17 +10,6 @@ from typing import Iterable, List
 from yolo_cityscapes_utils import build_label_to_class_index, get_dataset_paths, get_yolo_class_names, normalize_polygon
 
 
-def create_directory_junction(source: Path, link_path: Path) -> None:
-    """Create a Windows directory junction to avoid duplicating Cityscapes images."""
-    if link_path.exists() or link_path.is_symlink():
-        return
-
-    link_path.parent.mkdir(parents=True, exist_ok=True)
-    command = f'mklink /J "{link_path}" "{source}"'
-    result = os.system(f'cmd /c {command}')
-    if result != 0:
-        raise RuntimeError(f"Failed to create junction: {link_path} -> {source}")
-
 
 def iter_polygon_files(polygons_dir: Path, limit: int | None = None) -> Iterable[Path]:
     polygon_files = sorted(polygons_dir.rglob("*_gtFine_polygons.json"))
@@ -72,17 +61,29 @@ def prepare_split(dataset_root: Path, yolo_root: Path, split: str, limit: int | 
     images_dir, polygons_dir = get_dataset_paths(dataset_root, split)
     output_images_dir = yolo_root / "images" / split
     output_labels_dir = yolo_root / "labels" / split
-    output_images_dir.parent.mkdir(parents=True, exist_ok=True)
-    output_labels_dir.parent.mkdir(parents=True, exist_ok=True)
+    output_images_dir.mkdir(parents=True, exist_ok=True)
+    output_labels_dir.mkdir(parents=True, exist_ok=True)
 
-    create_directory_junction(images_dir, output_images_dir)
+    if split == 'val':
+        limit = 250  # Enforce exactly 250 images for the val split
 
     label_to_class = build_label_to_class_index()
     converted_files = 0
     converted_objects = 0
 
     for polygon_file in iter_polygon_files(polygons_dir, limit=limit):
+        # Convert label
         converted_objects += convert_polygon_file(polygon_file, output_labels_dir, label_to_class)
+        
+        # Copy image explicitly instead of junction to fix YOLOv8 Windows path resolution bug
+        city = polygon_file.parent.name
+        img_name = polygon_file.name.replace("_gtFine_polygons.json", "_leftImg8bit.png")
+        src_img = images_dir / city / img_name
+        dest_img_dir = output_images_dir / city
+        dest_img_dir.mkdir(parents=True, exist_ok=True)
+        if src_img.exists():
+            shutil.copy2(src_img, dest_img_dir / img_name)
+            
         converted_files += 1
 
     return converted_files, converted_objects
@@ -91,7 +92,7 @@ def prepare_split(dataset_root: Path, yolo_root: Path, split: str, limit: int | 
 def write_cityscapes_yaml(yolo_root: Path, yaml_path: Path) -> None:
     names = get_yolo_class_names()
     yaml_text = [
-        f"path: {yolo_root.as_posix()}",
+        f"path: {yolo_root.resolve().as_posix()}",
         "train: images/train",
         "val: images/val",
         "test: images/test",

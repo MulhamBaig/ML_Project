@@ -395,8 +395,42 @@ Fix: `src/yolo_latency_fixed.py` calls `model.model(tensor)` (raw backbone, no N
 
 ## Last Updated
 
-2026-05-14
+2026-05-15
 
 ## Status
 
 Phase 1 complete. Phase 2 baseline verification complete. Phase 3 sanity training complete (latency fix applied and verified). Phase 4 complete (visual comparison and metric charts generated). Phase 5 complete (workspace cleaned and visualization polished).
+
+## Final Full-Dataset Production Run
+
+The final production run on the entire 2,975 image dataset was executed on 2026-05-15.
+
+### Evaluation Rules
+
+Both models were evaluated on the **exact first 250 images** of the Cityscapes validation set to guarantee a 1-to-1 fair evaluation.
+
+### Execution Commands
+
+If you need to reproduce the final production run from scratch:
+
+**1. Prepare the YOLO dataset (copies images natively):**
+```powershell
+python src\prepare_yolo_cityscapes.py --yolo-root yolo_cityscapes --write-yaml
+```
+
+**2. Train the FCN-ResNet50 Baseline:**
+```powershell
+python src\train_baseline.py --run 5 --epochs 5 --bs 4 --size 512 512 --subset 0
+```
+
+**3. Train the YOLOv8n-seg Edge Model:**
+```powershell
+python src\train_yolo.py --data cityscapes.yaml --model yolov8n-seg.pt --epochs 5 --batch 4 --imgsz 512 --device 0 --yolo-root yolo_cityscapes --project runs/segment --name train_final --run-name yolov8n-seg-final --skip-latency
+```
+
+**4. Generate Metrics and Visuals:**
+```powershell
+python src\benchmark_all.py
+python src\plot_metrics.py
+python src\visual_grid.py
+```

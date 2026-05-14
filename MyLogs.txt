@@ -5,6 +5,26 @@ This project is for a low altitude drone that flies in cities at about truck hei
 The drone needs to understand what is around it so it can avoid objects safely.
 The first phase of the project is to build a semantic segmentation model using the Cityscapes fine annotation dataset.
 
+Dataset Selection Rationale
+The following datasets were evaluated during the planning phase:
+- CarObjectDetection: Rejected. Images are primarily side-profiles of cars. A navigating drone requires a forward-facing (ego-centric) perspective to detect obstacles in its actual flight path.
+- ZurichDataset: Rejected. Despite being drone-based, the camera angles point at rooftops and homes rather than the forward path needed for low-altitude obstacle avoidance.
+- COCO (Common Objects in Context): Rejected. A massive, general-purpose dataset with too many irrelevant classes (e.g., animals, indoor furniture). Wastes neural network capacity for an edge model.
+- Pascal VOC 2012: Rejected. Highly focused on everyday household objects and close-ups, offering no structural value for urban road navigation.
+- VisDrone: Rejected for Phase 1. Features a high-altitude, bird's-eye view, unlike our low-altitude "truck height" requirement. (Will be reconsidered for Phase 2 top-down target tracking).
+- Cityscapes: Selected. Recorded from vehicle dashcams, perfectly matching our drone's forward-facing, low-altitude perspective. Crucially, it provides highly accurate pixel-level semantic segmentation for 19 urban classes, allowing the flight controller to explicitly calculate "free space" (roads) versus boundaries.
+
+Model Selection Rationale
+The following architectures were selected to evaluate the trade-off between standard segmentation accuracy and real-time edge latency:
+
+1. The Baseline: FCN-ResNet50 (Fully Convolutional Network)
+- What it is: A classic, battle-tested semantic segmentation architecture built natively into PyTorch.
+- Why it was chosen: Selected to establish a reliable benchmark. It represents the traditional, unoptimized approach to segmentation. It answers the question: "What is the standard latency if we don't optimize for drones?" (Benchmarked at ~39.60 ms, which is too slow for our real-time requirements).
+
+2. The Edge Model: YOLOv8n-seg (YOLOv8 Nano Segmentation)
+- What it is: An ultra-lightweight, state-of-the-art instance segmentation model designed for real-time edge computing.
+- Why it was chosen: A low-altitude drone runs on a battery-powered edge computer with a strict 30 ms latency budget. The "Nano" architecture was explicitly chosen to prioritize blazing-fast inference speed over maximum accuracy. It achieved ~13.84 ms latency (nearly 3x faster than the baseline). This ensures the drone can process frames at ~70 FPS, allowing the flight controller to calculate "free space" and react to sudden obstacles in real-time.
+
 Dataset plan
 The dataset folder is `gtFine_trainvaltest`.
 The `gtFine_trainvaltest\gtFine\test` folder contains black images (privacy), so it will not be used.
@@ -19,7 +39,7 @@ Note: These three partitions are disjoint — no image appears in more than one 
 Git setup
 The project is managed with Git.
 The local project folder was linked to this GitHub repository:
-https://github.com/MulhamBaig/ML_Project.git
+https://github.com/MulhamBaig/ML_Project.git  
 The dataset folder was added to `.gitignore` so it will not be pushed to GitHub.
 The local `cityscapesScripts` checkout was also kept out of Git tracking so the main repo stays clean.
 Branch convention: phase1, phase2-baseline, phase3-yolov8 — one branch per phase.
@@ -91,7 +111,7 @@ Source files: `src/cityscapes_dataset.py`, `src/metrics_logger.py`, `src/train_b
 Training configuration (matched to YOLO for fair comparison):
 - Model: FCN-ResNet50 (pretrained=False, 19 classes)
 - Train subset: 400 images
-- Val subset: 100 images
+- Val subset: 400 images
 - Input size: 512x512
 - Batch size: 4
 - Epochs: 5
@@ -124,16 +144,15 @@ Source files:
 Training configuration (matched to ResNet50 for fair comparison):
 - Model: yolov8n-seg.pt (Nano, instance segmentation)
 - Train subset: 400 images (via yolo_cityscapes_trimmed)
-- Val subset: 400 images
+- Val subset: 250 images (the exact first half of the 500-image val set)
 - Input size: 512x512
 - Batch size: 4
 - Epochs: 5
 - Device: GPU (RTX 3060)
 
 YOLO dataset structure:
-- `yolo_cityscapes_trimmed/images/train` and `val` are Windows directory junctions
-  pointing to the original Cityscapes images (no duplication of 50 GB image set).
-- `yolo_cityscapes_trimmed/labels/train` and `val` contain generated YOLO polygon .txt files.
+- Images are explicitly copied to `yolo_cityscapes_trimmed/images` and `yolo_cityscapes/images` rather than using Windows directory junctions. This prevents YOLOv8 from resolving junction paths back to the original root and failing to locate the corresponding labels.
+- `labels/train` and `val` contain the generated YOLO polygon .txt files.
 
 Results:
 - Val Mask mAP50 (Epoch 1 → Epoch 5): 0.0641 → 0.1051
@@ -169,3 +188,12 @@ Phase 5 — Documentation & Git Wrap-Up (completed 2026-05-14)
 - Visual Comparison Polish: Updated `src/visual_grid.py` to disable bounding boxes (`boxes=False`) in YOLO predictions and reran the script to ensure a high-quality visual sample for the final grid.
 - Final Documentation: Polished `README.md` and `MyLogs.txt` to reflect the final project state.
 - Status: Phase 5 Complete: Workspace cleaned, unified benchmark tool added, and YOLO visualization updated to remove bounding boxes for 1-to-1 segmentation comparison.
+
+Phase 6 � Final Full Dataset Run & Visualizations (completed 2026-05-15)
+- Completed a final full-dataset run (2975 train images) for both FCN-ResNet50 and YOLOv8n-seg.
+- ResNet50 evaluated on the exact first 250 images of the Cityscapes val split.
+- YOLOv8n-seg evaluated on the exact same 250 validation images for parity.
+- Updated plot_metrics.py to map and plot only the final production models.
+- Updated visual_grid.py to generate a highly legible 2x2 comparison grid.
+- Pushed final code, logs, and visual comparison assets to main branch.
+

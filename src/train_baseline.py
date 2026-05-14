@@ -37,17 +37,23 @@ def compute_iou(pred, target, num_classes=19, ignore_index=255):
     return miou
 
 
-def evaluate(model, dataloader, device):
-    """Evaluate model on validation set and return mIoU."""
+def evaluate(model, dataloader, device, criterion):
+    """Evaluate model on validation set and return val_loss and mIoU."""
     model.eval()
     num_classes = 19
     conf = np.zeros((num_classes, num_classes), dtype=np.int64)
+    val_loss = 0.0
     
     with torch.no_grad():
         for imgs, masks in dataloader:
             imgs = imgs.to(device)
             masks = masks.to(device)
             out = model(imgs)['out']
+            
+            # Compute loss
+            loss = criterion(out, masks)
+            val_loss += loss.item()
+            
             preds = out.argmax(1)
             
             for p, t in zip(preds.cpu().numpy(), masks.cpu().numpy()):
@@ -60,7 +66,8 @@ def evaluate(model, dataloader, device):
     union = conf.sum(0) + conf.sum(1) - inter
     iu = inter / (union + 1e-9)
     miou = np.mean(iu)
-    return miou
+    avg_val_loss = val_loss / len(dataloader)
+    return avg_val_loss, miou
 
 
 def main():
@@ -82,7 +89,7 @@ def main():
     
     # Initialize dataset and loaders
     train_ds = CityscapesDataset(args.root, split='train', size=tuple(args.size), subset=args.subset)
-    val_ds = CityscapesDataset(args.root, split='val', size=tuple(args.size), subset=100)
+    val_ds = CityscapesDataset(args.root, split='val', size=tuple(args.size), subset=250)
     
     train_loader = DataLoader(train_ds, batch_size=args.bs, shuffle=True, num_workers=2)
     val_loader = DataLoader(val_ds, batch_size=1, shuffle=False, num_workers=1)
@@ -127,8 +134,8 @@ def main():
                 
                 # Validate
                 model.eval()
-                val_miou = evaluate(model, val_loader, device)
-                print(f"Epoch {epoch} val mIoU: {val_miou:.4f}")
+                val_loss, val_miou = evaluate(model, val_loader, device, criterion)
+                print(f"Epoch {epoch} val loss: {val_loss:.4f} val mIoU: {val_miou:.4f}")
                 
                 # Save checkpoint
                 checkpoint_name = f'{model_name}_Run{args.run}_Epoch{epoch}.pth'
@@ -136,12 +143,12 @@ def main():
                 torch.save(model.state_dict(), checkpoint_path)
                 print(f"Saved: {checkpoint_path}")
                 
-                # Log epoch metrics (val_loss is not easily computed, set to empty)
+                # Log epoch metrics
                 logger.log_epoch(
                     model_name=model_name,
                     epoch=epoch,
                     train_loss=train_loss,
-                    val_loss=None,
+                    val_loss=val_loss,
                     val_miou=val_miou,
                     epoch_duration_sec=epoch_duration,
                     total_time_sec=total_elapsed,

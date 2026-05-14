@@ -10,9 +10,9 @@ import torch.nn as nn
 # ---------------------------------------------------------------------------
 # SETTINGS
 # ---------------------------------------------------------------------------
-RESNET_WEIGHTS = Path('runs/phase2_baseline_run3/resnet50_Run3_Epoch5.pth')
-YOLO_WEIGHTS = Path('runs/segment/runs/segment/train_trimmed/weights/best.pt')
-VAL_DIR = Path('yolo_cityscapes_trimmed/images/val')
+RESNET_WEIGHTS = Path('runs/phase2_baseline_run5/resnet50_Run5_Epoch5.pth')
+YOLO_WEIGHTS = Path('runs/segment/runs/segment/train_final/weights/best.pt')
+VAL_DIR = Path('yolo_cityscapes/images/val')
 IMGSZ = 512
 N_WARMUP = 5
 N_MEASURE = 100
@@ -110,6 +110,14 @@ def main():
         y_lat = results["YOLOv8n-seg"][0]
         speedup = r_lat / y_lat
         print(f"YOLO is {speedup:.2f}x faster than ResNet50 baseline.")
+        
+        # Log to CSV
+        from metrics_logger import MetricsLogger
+        logger = MetricsLogger()
+        logger.log_inference_final("resnet50", r_lat)
+        logger.log_inference_final("yolov8n-seg-final", y_lat)
+        print("Logged final latencies to training_metrics_log.csv")
+        
     print("="*50)
 
 if __name__ == "__main__":
