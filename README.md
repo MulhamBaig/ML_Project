@@ -370,6 +370,16 @@ The initial YOLO latency of 76.71 ms vs ResNet50's 39.76 ms was a **measurement 
 
 Fix: `src/yolo_latency_fixed.py` calls `model.model(tensor)` (raw backbone, no NMS) with `torch.cuda.synchronize()` bracketing — same methodology as ResNet50.
 
+### ✅ Confirmed Latency Results (RTX 3060 Laptop GPU)
+
+| Model | Latency (ms) | Method | Verdict |
+|---|---|---|---|
+| FCN-ResNet50 | 39.76 ms | GPU-sync'd forward-pass | Baseline |
+| YOLOv8n-seg (old, wall-clock) | 76.71 ms | `model.predict()` end-to-end | ❌ Unfair measurement |
+| **YOLOv8n-seg (fixed, forward-pass)** | **13.27 ms** | GPU-sync'd forward-pass | **✅ 3.0× faster than ResNet50** |
+
+**Edge hypothesis validated**: YOLOv8n-seg is 3× faster than FCN-ResNet50 on the same hardware, well under the 30 ms real-time target.
+
 ### Comparison Artifacts
 
 - ResNet50 baseline artifacts are the checkpoints in `runs/phase2_baseline_run2/`.

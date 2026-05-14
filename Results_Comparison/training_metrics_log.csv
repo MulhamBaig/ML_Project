@@ -11,3 +11,4 @@ yolov8n-seg,3,9.995400,10.096970,0.089240,20.86,63.77,,"YOLO metric is Mask mAP5
 yolov8n-seg,4,9.681050,9.876240,0.099410,19.13,82.89,,"YOLO metric is Mask mAP50, Baseline is mIoU. Imported from YOLO results.csv"
 yolov8n-seg,5,9.444000,9.850620,0.105140,19.16,102.06,,"YOLO metric is Mask mAP50, Baseline is mIoU. Imported from YOLO results.csv"
 yolov8n-seg,FINAL,,,,,,76.71,Final inference latency measurement
+yolov8n-seg-fixed,FINAL,,,,,,13.27,"Forward-pass only (GPU-sync'd, no NMS, 5 warmup passes, 100 images)"

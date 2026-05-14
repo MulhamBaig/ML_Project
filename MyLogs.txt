@@ -176,3 +176,27 @@ Phase 3 git status (2026-05-14):
 
 Next step
 Run `src/yolo_latency_fixed.py` to obtain the corrected YOLO forward-pass latency, then proceed to Phase 4 (visual_grid.py) and Phase 5 (Git wrap-up).
+
+Latency fix result (2026-05-14):
+- Ran `src/yolo_latency_fixed.py` with ML_Project venv active.
+- GPU: NVIDIA GeForce RTX 3060 Laptop GPU (CUDA confirmed).
+- Weights loaded from: `runs/segment/runs/segment/train_trimmed/weights/best.pt`
+- Measured over 100 validation images with 5 GPU warm-up passes.
+- YOLOv8n-seg fixed forward-pass latency: 13.27 ms (std dev 1.77 ms).
+- Comparison:
+  - FCN-ResNet50 (GPU-sync'd forward-pass):  39.76 ms
+  - YOLOv8n-seg (old wall-clock, incl. NMS): 76.71 ms  [unfair]
+  - YOLOv8n-seg (fixed, forward-pass only):  13.27 ms  [fair, apples-to-apples]
+- EDGE HYPOTHESIS VALIDATED: YOLO is 3.0x faster than ResNet50 on the RTX 3060.
+- CSV updated: `Results_Comparison/training_metrics_log.csv` now contains all three FINAL rows.
+
+Requirements freeze (2026-05-14):
+- Ran `pip freeze` inside ML_Project venv and wrote UTF-8 output to `requirements.txt`.
+- Total packages frozen: 134.
+- Note: `requirements.txt` now contains pinned versions of all installed packages including
+  torch==2.12.0+cu132, torchvision==0.27.0+cu132, ultralytics==8.4.50, and all transitive deps.
+- Helper script `freeze_reqs.py` used to avoid PowerShell UTF-16 redirect issue (not tracked in git).
+
+Next step
+Phase 4: Run `src/visual_grid.py` to generate the 1x4 visual comparison grid.
+Phase 5: Final git commit and push with updated docs.
