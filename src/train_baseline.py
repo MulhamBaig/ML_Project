@@ -7,6 +7,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision.models.segmentation import fcn_resnet50
 import numpy as np
+from PIL import Image
 
 from cityscapes_dataset import CityscapesDataset
 from metrics_logger import MetricsLogger
@@ -170,19 +171,21 @@ def main():
                 else:
                     raise
         
-        # Measure inference latency on 100 validation images
+        # Measure end-to-end inference latency on 100 validation images.
+        # This includes image decode, resize/normalize, host-to-device transfer, and forward pass.
         print("\nMeasuring inference latency on 100 validation images...")
         model.eval()
         timings = []
         with torch.no_grad():
-            for imgs, masks in val_loader:
-                imgs = imgs.to(device)
-                
+            for img_path in val_ds.images[:100]:
+                img = Image.open(img_path).convert('RGB')
+                img = val_ds.img_transform(img).unsqueeze(0).to(device)
+
                 if device.type == 'cuda':
                     torch.cuda.synchronize()
                 t0 = time.time()
-                
-                out = model(imgs)['out']
+
+                out = model(img)['out']
                 
                 if device.type == 'cuda':
                     torch.cuda.synchronize()

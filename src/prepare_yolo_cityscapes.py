@@ -37,7 +37,10 @@ def convert_polygon_file(polygon_file: Path, output_labels_root: Path, label_to_
     img_width = int(payload["imgWidth"])
 
     city = polygon_file.parent.name
-    label_path = output_labels_root / city / polygon_file.name.replace("_gtFine_polygons.json", ".txt")
+    # YOLO requires label basename to match image basename.
+    # Cityscapes image: <id>_leftImg8bit.png -> label: <id>_leftImg8bit.txt
+    label_name = polygon_file.name.replace("_gtFine_polygons.json", "_leftImg8bit.txt")
+    label_path = output_labels_root / city / label_name
     label_path.parent.mkdir(parents=True, exist_ok=True)
 
     lines: List[str] = []

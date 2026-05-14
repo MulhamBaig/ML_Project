@@ -42,6 +42,7 @@ dist/
 
 # YOLO phase 3 outputs and derived datasets
 yolo_cityscapes/
+yolo_cityscapes_trimmed/
 runs/segment/
 *.pt
 *.onnx

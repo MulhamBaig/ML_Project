@@ -104,7 +104,7 @@ Phase 2 — Baseline FCN-ResNet50 (completed 2026-05-14):
 Notes:
 - This run is intended as a pipeline verification and baseline benchmark. Use the full train set and longer schedules for production training.
 
-Phase 3 — YOLOv8-Seg setup (in progress 2026-05-14):
+Phase 3 — YOLOv8-Seg setup (completed 2026-05-14):
 - Switched to the `phase3-yolov8` branch.
 - Added YOLO helper scripts under `src/`:
   - `yolo_cityscapes_utils.py`
@@ -122,4 +122,57 @@ Phase 3 — YOLOv8-Seg setup (in progress 2026-05-14):
 
 Notes:
 - YOLOv8 reports segmentation metrics in its own CSV format, so the parser maps the mask metric rows into the shared comparison log.
-- Full YOLO training has not been run yet; this phase currently covers the data conversion and training plumbing.
+- YOLO sanity run was executed for 5 epochs with batch size 4 and image size 512 on GPU.
+- During execution, multiple dataset formatting issues were fixed:
+  - `cityscapes_trimmed.yaml` syntax and missing/duplicated `names` section
+  - label filename alignment with image names (`*_leftImg8bit.txt`)
+  - stale YOLO cache files were removed before rerun
+- Current YOLO run status:
+  - training completed and `best.pt`/`last.pt` were saved under `runs/segment/runs/segment/train_trimmed/weights`
+  - average inference latency over 100 validation images: 74.03 ms
+  - YOLO epoch rows were cleaned and appended to `Results_Comparison/training_metrics_log.csv`
+  - validation mask mAP50 improved from 0.06410 to 0.10514 across the 5 epochs
+- Phase 3 is now complete for the sanity-run checkpoint; remaining work moves into evaluation and visual comparison.
+
+Today's rerun cleanup and comparison update:
+- Reset `Results_Comparison/training_metrics_log.csv` and removed stale duplicate YOLO rows.
+- Updated `src/append_yolo_metrics.py` so YOLO rows are imported from Ultralytics `results.csv` with epoch durations and total elapsed time taken from the `time` column.
+- Updated `src/train_yolo.py` to clear stale `*.cache` files before training and write the final latency row automatically.
+- Updated `src/train_baseline.py` to measure latency in the same end-to-end style as YOLO.
+- Reran both models under matched conditions:
+  - ResNet50 baseline: 5 epochs, batch size 4, input size 512x512, 400 train samples
+  - YOLOv8n-seg: 5 epochs, batch size 4, input size 512x512, 400 train samples
+- Current comparison outputs on disk:
+  - ResNet50 checkpoints in `runs/phase2_baseline_run2/`
+  - YOLO validation prediction images in `runs/segment/train/` (`val_batch*_pred.jpg`, `val_batch*_labels.jpg`)
+  - Shared metrics table in `Results_Comparison/training_metrics_log.csv`
+
+Phase 3 — Latency Bug Root Cause & Fix (2026-05-14):
+- CRITICAL BUG IDENTIFIED: The reported YOLO latency of 76.71 ms vs ResNet50's 39.76 ms was a measurement methodology mismatch, NOT a true model speed issue.
+- Root cause breakdown:
+  1. ResNet50 measured: torch.cuda.synchronize() + time() around forward pass ONLY (no I/O, no pre/post processing inside timing window).
+  2. YOLOv8n-seg measured: wall-clock time() around model.predict(source=path) which includes:
+     - Disk I/O (reading the image file inside the timed window)
+     - Non-Maximum Suppression (NMS) post-processing
+     - Ultralytics Results object construction and Python dispatch overhead
+     - No GPU warm-up (cold-start GPU JIT penalty on first N images)
+- Fix implemented: Created `src/yolo_latency_fixed.py` which:
+  - Loads and preprocesses images OUTSIDE the timed window
+  - Calls model.model(tensor) (raw PyTorch backbone, no NMS)
+  - Uses torch.cuda.synchronize() before and after each forward pass
+  - Runs 5 GPU warm-up passes before measurement begins
+  - Appends a yolov8n-seg-fixed FINAL row to the shared CSV
+- Additional fixes:
+  - Added `src/trim_yolo_dataset.py` for dataset trimming utility
+  - Fixed `src/visual_grid.py` to use run2 baseline weights (resnet50_Run2_Epoch5.pth) and train_trimmed YOLO weights
+  - Updated `cityscapes_trimmed.yaml` for trimmed dataset training
+
+Phase 3 git status (2026-05-14):
+- Branch: phase3-yolov8
+- All Phase 3 scripts committed and pushed after latency fix.
+- Files staged and committed: .gitignore, MyLogs.txt, README.md, Results_Comparison/training_metrics_log.csv,
+  src/append_yolo_metrics.py, src/prepare_yolo_cityscapes.py, src/train_baseline.py, src/train_yolo.py,
+  src/yolo_latency_fixed.py, src/visual_grid.py (path fix), cityscapes_trimmed.yaml, src/trim_yolo_dataset.py
+
+Next step
+Run `src/yolo_latency_fixed.py` to obtain the corrected YOLO forward-pass latency, then proceed to Phase 4 (visual_grid.py) and Phase 5 (Git wrap-up).
