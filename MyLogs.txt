@@ -154,9 +154,14 @@ Latency results (100 validation images, GPU-sync'd forward-pass only):
 Phase 3 is now fully complete and verified. Environment is locked and clean.
 
 Phase 4 — Evaluation & Visual Comparison (completed 2026-05-14)
-- Generated a 1x4 Matplotlib comparison grid: Raw Image, Ground Truth, FCN-ResNet50 prediction, and YOLOv8n-seg prediction.
-- Output saved to: `Results_Comparison/visual_comparison.png`
-- Verified that both models produce valid segmentation masks on unseen validation samples.
+- Generated a 1x4 Matplotlib comparison grid: Raw Image, Ground Truth, FCN-ResNet50 prediction, and YOLOv8n-seg prediction (`visual_comparison.png`).
+- Created `src/plot_metrics.py` to automate metric visualization.
+- Generated three comparison charts in `Results_Comparison/`:
+  - `accuracy_progression.png`: Accuracy over 5 epochs (mIoU vs mAP50).
+  - `latency_comparison.png`: GPU-sync'd inference latency (ms).
+  - `training_time_comparison.png`: Total training duration (sec).
+- Verified that both models produce valid segmentation masks and that YOLO's edge performance is clearly visualized.
+- Phase 4 is now fully complete with all qualitative and quantitative visualizations generated.
 
 Phase 5 — Documentation & Git Wrap-Up
 Status: Pending.

@@ -386,10 +386,17 @@ Fix: `src/yolo_latency_fixed.py` calls `model.model(tensor)` (raw backbone, no N
 - YOLO prediction images are available as `val_batch0_pred.jpg`, `val_batch1_pred.jpg`, and `val_batch2_pred.jpg` alongside the matching label images.
 - Shared metrics table: `Results_Comparison/training_metrics_log.csv`
 
+### Visualizations
+
+- **Semantic Grid**: `Results_Comparison/visual_comparison.png` (Raw, GT, ResNet, YOLO)
+- **Accuracy Progression**: `Results_Comparison/accuracy_progression.png`
+- **Latency Benchmarks**: `Results_Comparison/latency_comparison.png`
+- **Training Efficiency**: `Results_Comparison/training_time_comparison.png`
+
 ## Last Updated
 
 2026-05-14
 
 ## Status
 
-Phase 1 complete. Phase 2 baseline verification complete. Phase 3 sanity training complete (latency fix applied and verified). Phase 4 complete (visual comparison generated). Phase 5 (Git wrap-up) pending.
+Phase 1 complete. Phase 2 baseline verification complete. Phase 3 sanity training complete (latency fix applied and verified). Phase 4 complete (visual comparison and metric charts generated). Phase 5 (Git wrap-up) pending.
