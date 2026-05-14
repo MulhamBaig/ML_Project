@@ -1,0 +1,7 @@
+Model_Name,Epoch,Train_Loss,Val_Loss,Val_mIoU,Epoch_Duration_sec,Total_Time_Elapsed_sec,Inference_Latency_ms,Notes_and_Errors
+resnet50,1,0.936279,,0.214216,25.76,25.76,,
+resnet50,2,0.532404,,0.24928,25.46,63.12,,
+resnet50,3,0.460915,,0.262658,25.48,100.18,,
+resnet50,4,0.424763,,0.27932,25.48,137.26,,
+resnet50,5,0.390371,,0.293345,25.59,174.29,,
+resnet50,FINAL,,,,,,26.29,Final inference latency measurement

@@ -54,7 +54,8 @@ class CityscapesDataset(Dataset):
         img = self.img_transform(img)
 
         mask = Image.open(mask_path)
-        mask = mask.resize(self.size, resample=Image.NEAREST)
+        # PIL expects size as (width, height) while our `size` is (height, width)
+        mask = mask.resize((self.size[1], self.size[0]), resample=Image.NEAREST)
         mask = np.array(mask, dtype=np.int64)
         mask = torch.from_numpy(mask).long()
 
