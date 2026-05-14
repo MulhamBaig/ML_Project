@@ -18,4 +18,4 @@ requests
 # python -m pip install torch torchvision torchaudio
 
 # Optional (for later phases):
-# ultralytics  # required for YOLOv8-seg training (Phase 3)
+ultralytics>=8.2.0  # required for YOLOv8-seg training (Phase 3)

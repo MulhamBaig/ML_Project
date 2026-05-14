@@ -39,3 +39,10 @@ gtFine_trainvaltest/
 build/
 dist/
 *.egg-info/
+
+# YOLO phase 3 outputs and derived datasets
+yolo_cityscapes/
+runs/segment/
+*.pt
+*.onnx
+*.engine

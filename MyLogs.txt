@@ -103,3 +103,23 @@ Phase 2 — Baseline FCN-ResNet50 (completed 2026-05-14):
 
 Notes:
 - This run is intended as a pipeline verification and baseline benchmark. Use the full train set and longer schedules for production training.
+
+Phase 3 — YOLOv8-Seg setup (in progress 2026-05-14):
+- Switched to the `phase3-yolov8` branch.
+- Added YOLO helper scripts under `src/`:
+  - `yolo_cityscapes_utils.py`
+  - `prepare_yolo_cityscapes.py`
+  - `append_yolo_metrics.py`
+  - `train_yolo.py`
+- Added `cityscapes.yaml` for Ultralytics.
+- Installed `ultralytics` into the active venv.
+- Ran a dry conversion test on one train sample and one val sample.
+- The converter successfully created directory junctions for:
+  - `yolo_cityscapes/images/train`
+  - `yolo_cityscapes/images/val`
+- The converter wrote YOLO polygon label files into `yolo_cityscapes/labels/...`.
+- The YOLO parser is ready to read `runs/segment/train/results.csv` and append mask/loss rows into `Results_Comparison/training_metrics_log.csv`.
+
+Notes:
+- YOLOv8 reports segmentation metrics in its own CSV format, so the parser maps the mask metric rows into the shared comparison log.
+- Full YOLO training has not been run yet; this phase currently covers the data conversion and training plumbing.

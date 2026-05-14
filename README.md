@@ -381,5 +381,52 @@ Summary: The baseline FCN-ResNet50 pipeline completed a short verification run s
 
 ---
 
+## Phase 3 Setup (YOLOv8-Seg)
+
+Phase 3 prepares the Cityscapes data for YOLOv8 segmentation so we can compare a fast drone-friendly model against the PyTorch baseline.
+
+### Files added for Phase 3
+
+- `src/yolo_cityscapes_utils.py` - shared Cityscapes label helpers and polygon normalization
+- `src/prepare_yolo_cityscapes.py` - converts Cityscapes JSON polygons into YOLO segmentation `.txt` files
+- `src/append_yolo_metrics.py` - appends Ultralytics `results.csv` rows into `Results_Comparison/training_metrics_log.csv`
+- `src/train_yolo.py` - YOLOv8 training entrypoint with latency measurement and CSV logging
+- `cityscapes.yaml` - YOLO dataset definition file
+
+### How the YOLO dataset is organized
+
+The conversion script creates a lightweight YOLO dataset root called `yolo_cityscapes/`.
+
+- `yolo_cityscapes/images/train` and `yolo_cityscapes/images/val` are Windows directory junctions that point back to the original Cityscapes images.
+- `yolo_cityscapes/labels/train` and `yolo_cityscapes/labels/val` contain the generated YOLO polygon `.txt` files.
+- This avoids duplicating the 50GB image set while still giving YOLO the folder structure it expects.
+
+### What was verified
+
+I ran a dry run of the converter on one train sample and one val sample.
+
+- Junctions were created successfully for `yolo_cityscapes/images/train` and `yolo_cityscapes/images/val`.
+- Example label files were written in YOLO segmentation format.
+- `cityscapes.yaml` was written and points to the new YOLO dataset root.
+
+### YOLO training flow
+
+1. Convert Cityscapes polygons:
+   ```powershell
+   .\ML_Project\Scripts\python.exe src\prepare_yolo_cityscapes.py --dataset-root gtFine_trainvaltest --yolo-root yolo_cityscapes --splits train val --write-yaml
+   ```
+2. Train YOLOv8 segmentation:
+   ```powershell
+   .\ML_Project\Scripts\python.exe src\train_yolo.py --data cityscapes.yaml --model yolov8n-seg.pt --epochs 20 --imgsz 512 --device 0
+   ```
+3. Append YOLO metrics into the shared CSV log:
+   - The training script already reads `runs/segment/train/results.csv` and appends the values into `Results_Comparison/training_metrics_log.csv`.
+
+### Important note about YOLO metrics
+
+Ultralytics reports segmentation metrics in its own CSV format. The parser maps the mask metric columns from `results.csv` into the shared training log so the baseline and YOLO results can live in one table for later comparison.
+
+---
+
 **Last Updated**: 2026-05-14  
-**Status**: Phase 1 complete; Phase 2 baseline verification and metrics logging finished.
+**Status**: Phase 1 complete; Phase 2 baseline verification and metrics logging finished; Phase 3 setup in progress.
