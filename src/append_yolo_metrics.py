@@ -29,32 +29,71 @@ def append_yolo_results(results_csv: Path, model_name: str, notes: str = "Import
     with results_csv.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
         for row in reader:
-            epoch = int(float(row.get("epoch", rows_written))) + 1
+            # Normalize header keys by stripping whitespace
+            normalized = {k.strip(): (v if v is not None else "") for k, v in row.items()}
+
+            # determine epoch
+            epoch = int(float(normalized.get("epoch", rows_written))) + 1
+
+            # aggregate train/val loss if present
             train_loss = sum(
                 value or 0.0
                 for value in [
-                    _get_float(row, "train/box_loss"),
-                    _get_float(row, "train/seg_loss"),
+                    _get_float(normalized, "train/box_loss", "train/seg_loss", "train/obj_loss", "train/cls_loss"),
                 ]
             )
             val_loss = sum(
                 value or 0.0
                 for value in [
-                    _get_float(row, "val/box_loss"),
-                    _get_float(row, "val/seg_loss"),
+                    _get_float(normalized, "val/box_loss", "val/seg_loss", "val/obj_loss", "val/cls_loss"),
                 ]
             )
-            yolo_mask_metric = _get_float(row, "metrics/mAP50-95(M)", "metrics/mAP50(M)")
+
+            # Find YOLO mask metric robustly: look for keys with 'mask' and 'map' or keys that include '(M)'
+            yolo_mask_metric = None
+            for k, v in normalized.items():
+                k_low = k.lower().replace(" ", "")
+                if v == "":
+                    continue
+                try:
+                    val = float(v)
+                except Exception:
+                    continue
+                if "(m)" in k_low or "mask" in k_low or "(mask)" in k_low:
+                    yolo_mask_metric = val
+                    break
+                # fallback: columns like metrics/mAP50(M) or metrics/mAP50-95(M)
+                if "map" in k_low and "(m)" in k_low:
+                    yolo_mask_metric = val
+                    break
+
+            # If no explicit mask mAP found, try common map keys without (M)
+            if yolo_mask_metric is None:
+                for k, v in normalized.items():
+                    k_low = k.lower().replace(" ", "")
+                    if v == "":
+                        continue
+                    try:
+                        val = float(v)
+                    except Exception:
+                        continue
+                    if "map50" in k_low and "(m)" not in k_low:
+                        # prefer mask-specific earlier; this is a fallback
+                        yolo_mask_metric = val
+                        break
+
+            # map YOLO mask mAP into Val_mIoU column and add explanatory note
+            note_text = "YOLO metric is Mask mAP50, Baseline is mIoU. " + (notes or "")
             logger.log_epoch(
                 model_name=model_name,
                 epoch=epoch,
-                train_loss=train_loss,
-                val_loss=val_loss,
+                train_loss=train_loss if train_loss != 0.0 else None,
+                val_loss=val_loss if val_loss != 0.0 else None,
                 val_miou=yolo_mask_metric,
                 epoch_duration_sec=0.0,
                 total_time_sec=0.0,
                 inference_latency_ms=None,
-                notes=notes,
+                notes=note_text,
             )
             rows_written += 1
 
