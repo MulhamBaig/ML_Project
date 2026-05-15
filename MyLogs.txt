@@ -1,4 +1,4 @@
-﻿PROJECT LOG
+PROJECT LOG
 
 Project goal
 This project is for a low altitude drone that flies in cities at about truck height.
@@ -34,7 +34,7 @@ Partitioning (finalized)
 - Validation: use the first half of the `gtFine_trainvaltest\gtFine\val` folder.
 - Testing: use the second half of the `gtFine_trainvaltest\gtFine\val` folder.
 
-Note: These three partitions are disjoint — no image appears in more than one partition.
+Note: These three partitions are disjoint � no image appears in more than one partition.
 
 Git setup
 The project is managed with Git.
@@ -42,7 +42,7 @@ The local project folder was linked to this GitHub repository:
 https://github.com/MulhamBaig/ML_Project.git  
 The dataset folder was added to `.gitignore` so it will not be pushed to GitHub.
 The local `cityscapesScripts` checkout was also kept out of Git tracking so the main repo stays clean.
-Branch convention: phase1, phase2-baseline, phase3-yolov8 — one branch per phase.
+Branch convention: phase1, phase2-baseline, phase3-yolov8 � one branch per phase.
 
 Environment setup
 1. Set the PowerShell execution policy for the current user with `RemoteSigned` so activation scripts can run.
@@ -86,13 +86,13 @@ Organized the dataset according to the Cityscapes standard structure:
 - Moved the `leftImg8bit` folder into `gtFine_trainvaltest` so both annotation and image types sit at the same level.
 - The final structure is:
   gtFine_trainvaltest/
-  ├── gtFine/           (fine annotations, with *_labelTrainIds.png files)
-  ├── leftImg8bit/      (RGB images for all splits)
-  ├── license.txt
-  └── README
+  +-- gtFine/           (fine annotations, with *_labelTrainIds.png files)
+  +-- leftImg8bit/      (RGB images for all splits)
+  +-- license.txt
+  +-- README
 - Added dataset and zip file to `.gitignore` to prevent accidental commits of large files.
 
-Phase 1 — Pre-Flight Check (completed 2026-05-14)
+Phase 1 � Pre-Flight Check (completed 2026-05-14)
 - Verified dataset root: `gtFine_trainvaltest` contains `gtFine/` and `leftImg8bit/` at the same level.
 - Verified `_labelTrainIds.png` mask counts:
   - `gtFine/train`: 2975 files
@@ -105,7 +105,7 @@ Phase 1 — Pre-Flight Check (completed 2026-05-14)
 
 All Phase 1 pre-flight checks passed. Environment is verified and reproducible.
 
-Phase 2 — Baseline FCN-ResNet50 (completed 2026-05-14)
+Phase 2 � Baseline FCN-ResNet50 (completed 2026-05-14)
 Source files: `src/cityscapes_dataset.py`, `src/metrics_logger.py`, `src/train_baseline.py`
 
 Training configuration (matched to YOLO for fair comparison):
@@ -130,16 +130,16 @@ Latency measurement methodology:
 - `torch.cuda.synchronize()` called before and after the model forward pass.
 - Latency = net GPU forward-pass time only (no I/O, no pre/post processing).
 
-Phase 3 — YOLOv8-Seg Edge Model (completed 2026-05-14)
+Phase 3 � YOLOv8-Seg Edge Model (completed 2026-05-14)
 Source files:
-  - `src/yolo_cityscapes_utils.py` — Cityscapes label helpers and polygon normalization
-  - `src/prepare_yolo_cityscapes.py` — converts JSON polygons to YOLO .txt format
-  - `src/train_yolo.py` — YOLO training entrypoint and CSV logging
-  - `src/append_yolo_metrics.py` — maps Ultralytics results.csv into the shared CSV
-  - `src/trim_yolo_dataset.py` — trims the YOLO dataset to a fixed sample count
-  - `src/yolo_latency_fixed.py` — correct GPU-sync'd latency benchmark (no NMS)
-  - `src/visual_grid.py` — generates 1x4 comparison grid (Raw, GT, ResNet50, YOLO)
-  - `cityscapes_trimmed.yaml` — YOLO dataset config for 400-sample trimmed subset
+  - `src/yolo_cityscapes_utils.py` � Cityscapes label helpers and polygon normalization
+  - `src/prepare_yolo_cityscapes.py` � converts JSON polygons to YOLO .txt format
+  - `src/train_yolo.py` � YOLO training entrypoint and CSV logging
+  - `src/append_yolo_metrics.py` � maps Ultralytics results.csv into the shared CSV
+  - `src/trim_yolo_dataset.py` � trims the YOLO dataset to a fixed sample count
+  - `src/yolo_latency_fixed.py` � correct GPU-sync'd latency benchmark (no NMS)
+  - `src/visual_grid.py` � generates 1x4 comparison grid (Raw, GT, ResNet50, YOLO)
+  - `cityscapes_trimmed.yaml` � YOLO dataset config for 400-sample trimmed subset
 
 Training configuration (matched to ResNet50 for fair comparison):
 - Model: yolov8n-seg.pt (Nano, instance segmentation)
@@ -155,7 +155,7 @@ YOLO dataset structure:
 - `labels/train` and `val` contain the generated YOLO polygon .txt files.
 
 Results:
-- Val Mask mAP50 (Epoch 1 → Epoch 5): 0.0641 → 0.1051
+- Val Mask mAP50 (Epoch 1 ? Epoch 5): 0.0641 ? 0.1051
 - Weights: `runs/segment/runs/segment/train_trimmed/weights/best.pt`
 
 Latency measurement methodology:
@@ -172,7 +172,7 @@ Latency results (100 validation images, GPU-sync'd forward-pass only):
 
 Phase 3 is now fully complete and verified. Environment is locked and clean.
 
-Phase 4 — Evaluation & Visual Comparison (completed 2026-05-14)
+Phase 4 � Evaluation & Visual Comparison (completed 2026-05-14)
 - Generated a 1x4 Matplotlib comparison grid: Raw Image, Ground Truth, FCN-ResNet50 prediction, and YOLOv8n-seg prediction (`visual_comparison.png`).
 - Created `src/plot_metrics.py` to automate metric visualization.
 - Generated three comparison charts in `Results_Comparison/`:
@@ -182,14 +182,14 @@ Phase 4 — Evaluation & Visual Comparison (completed 2026-05-14)
 - Verified that both models produce valid segmentation masks and that YOLO's edge performance is clearly visualized.
 - Phase 4 is now fully complete with all qualitative and quantitative visualizations generated.
 
-Phase 5 — Documentation & Git Wrap-Up (completed 2026-05-14)
+Phase 5 � Documentation & Git Wrap-Up (completed 2026-05-14)
 - Workspace Audit & Cleanup: Removed obsolete scripts (`src/yolo_inference_latency.py`) and temporary weights (`yolo26n.pt`).
 - Benchmark Unified: Created `src/benchmark_all.py` to provide a single, fair comparison tool for future runs. This script measures both ResNet50 and YOLO using the same GPU-sync methodology.
 - Visual Comparison Polish: Updated `src/visual_grid.py` to disable bounding boxes (`boxes=False`) in YOLO predictions and reran the script to ensure a high-quality visual sample for the final grid.
 - Final Documentation: Polished `README.md` and `MyLogs.txt` to reflect the final project state.
 - Status: Phase 5 Complete: Workspace cleaned, unified benchmark tool added, and YOLO visualization updated to remove bounding boxes for 1-to-1 segmentation comparison.
 
-Phase 6 � Final Full Dataset Run & Visualizations (completed 2026-05-15)
+Phase 6 ? Final Full Dataset Run & Visualizations (completed 2026-05-15)
 - Completed a final full-dataset run (2975 train images) for both FCN-ResNet50 and YOLOv8n-seg.
 - ResNet50 evaluated on the exact first 250 images of the Cityscapes val split.
 - YOLOv8n-seg evaluated on the exact same 250 validation images for parity.
