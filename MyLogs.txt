@@ -1,4 +1,4 @@
-PROJECT LOG
+﻿PROJECT LOG
 
 Project goal
 This project is for a low altitude drone that flies in cities at about truck height.
@@ -166,9 +166,9 @@ Latency measurement methodology:
 - This matches the ResNet50 measurement methodology exactly for a fair comparison.
 
 Latency results (100 validation images, GPU-sync'd forward-pass only):
-- YOLOv8n-seg: 13.84 ms
-- FCN-ResNet50: 39.60 ms
-- Comparison: YOLO is 2.86x faster than ResNet50.
+- YOLOv8n-seg: 10.87 ms
+- FCN-ResNet50: 34.27 ms
+- Comparison: YOLO is 3.15x faster than ResNet50.
 
 Phase 3 is now fully complete and verified. Environment is locked and clean.
 
@@ -189,7 +189,7 @@ Phase 5 — Documentation & Git Wrap-Up (completed 2026-05-14)
 - Final Documentation: Polished `README.md` and `MyLogs.txt` to reflect the final project state.
 - Status: Phase 5 Complete: Workspace cleaned, unified benchmark tool added, and YOLO visualization updated to remove bounding boxes for 1-to-1 segmentation comparison.
 
-Phase 6 � Final Full Dataset Run & Visualizations (completed 2026-05-15)
+Phase 6 � Final Full Dataset Run & Visualizations (completed 2026-05-15)
 - Completed a final full-dataset run (2975 train images) for both FCN-ResNet50 and YOLOv8n-seg.
 - ResNet50 evaluated on the exact first 250 images of the Cityscapes val split.
 - YOLOv8n-seg evaluated on the exact same 250 validation images for parity.

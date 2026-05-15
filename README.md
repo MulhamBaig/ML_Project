@@ -351,7 +351,7 @@ Ultralytics reports segmentation metrics in its own CSV format. The parser maps 
 ### Phase 3 Sanity-Run Results
 
 | Metric | Value |
-|--------|-------|
+| --- | --- |
 | YOLO epochs trained | 5 |
 | Val Mask mAP50 (Epoch 1) | 0.0641 |
 | Val Mask mAP50 (Epoch 5) | 0.1051 |
@@ -362,7 +362,7 @@ Ultralytics reports segmentation metrics in its own CSV format. The parser maps 
 The initial YOLO latency of 76.71 ms vs ResNet50's 39.76 ms was a **measurement methodology mismatch**, not a true model speed difference.
 
 | Overhead Source | FCN-ResNet50 | YOLOv8n-seg (old) | YOLOv8n-seg (fixed) |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Measurement | `torch.cuda.synchronize()` + forward pass only | `model.predict()` wall-clock | `torch.cuda.synchronize()` + forward pass only |
 | NMS included | No | Yes (~10-20 ms) | No |
 | Disk I/O inside timing | No | Yes | No |
@@ -373,11 +373,11 @@ Fix: `src/yolo_latency_fixed.py` calls `model.model(tensor)` (raw backbone, no N
 ### ✅ Confirmed Latency Results (RTX 3060 Laptop GPU)
 
 | Model | Latency (ms) | Method | Verdict |
-|---|---|---|---|
-| FCN-ResNet50 | 39.60 ms | GPU-sync'd forward-pass | Baseline |
-| **YOLOv8n-seg (fixed, forward-pass)** | **13.84 ms** | GPU-sync'd forward-pass | **✅ 2.86× faster than ResNet50** |
+| --- | --- | --- | --- |
+| FCN-ResNet50 | 34.27 ms | GPU-sync'd forward-pass | Baseline |
+| **YOLOv8n-seg (fixed, forward-pass)** | **10.87 ms** | GPU-sync'd forward-pass | **✅ 3.15× faster than ResNet50** |
 
-**Edge hypothesis validated**: YOLOv8n-seg is nearly 3× faster than FCN-ResNet50 on the same hardware, well under the 30 ms real-time target.
+**Edge hypothesis validated**: YOLOv8n-seg is over 3× faster than FCN-ResNet50 on the same hardware, well under the 30 ms real-time target.
 
 ### Comparison Artifacts
 
@@ -414,21 +414,25 @@ Both models were evaluated on the **exact first 250 images** of the Cityscapes v
 If you need to reproduce the final production run from scratch:
 
 **1. Prepare the YOLO dataset (copies images natively):**
+
 ```powershell
 python src\prepare_yolo_cityscapes.py --yolo-root yolo_cityscapes --write-yaml
 ```
 
 **2. Train the FCN-ResNet50 Baseline:**
+
 ```powershell
 python src\train_baseline.py --run 5 --epochs 5 --bs 4 --size 512 512 --subset 0
 ```
 
 **3. Train the YOLOv8n-seg Edge Model:**
+
 ```powershell
 python src\train_yolo.py --data cityscapes.yaml --model yolov8n-seg.pt --epochs 5 --batch 4 --imgsz 512 --device 0 --yolo-root yolo_cityscapes --project runs/segment --name train_final --run-name yolov8n-seg-final --skip-latency
 ```
 
 **4. Generate Metrics and Visuals:**
+
 ```powershell
 python src\benchmark_all.py
 python src\plot_metrics.py
